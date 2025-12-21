@@ -1,5 +1,6 @@
 #!/bin/bash
 # Shows public IP (fetches and caches both IP and country)
+# Uses icanhazip.com for IP and db-ip.com for country
 
 CACHE_FILE="/tmp/tmux_ip_cache"
 CACHE_TTL=60  # 1 minute
@@ -13,12 +14,14 @@ if [ -f "$CACHE_FILE" ]; then
     fi
 fi
 
-# Fetch fresh data
-response=$(curl -s --max-time 2 ipinfo.io)
+# Get IP from icanhazip.com (Cloudflare)
+ip=$(curl -s --max-time 2 https://icanhazip.com 2>/dev/null | tr -d '\n')
 
-if [ -n "$response" ]; then
-    ip=$(echo "$response" | grep -o '"ip": "[^"]*' | cut -d'"' -f4)
-    country=$(echo "$response" | grep -o '"country": "[^"]*' | cut -d'"' -f4)
+if [ -n "$ip" ]; then
+    # Get country from db-ip.com
+    country=$(curl -s --max-time 2 "http://api.db-ip.com/v2/free/$ip/countryCode" 2>/dev/null | tr -d '\n"')
+    [ -z "$country" ] && country="??"
+
     echo "$ip" > "$CACHE_FILE"
     echo "$country" >> "$CACHE_FILE"
     echo "$ip"
