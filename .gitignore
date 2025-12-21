@@ -1,0 +1,14 @@
+# TPM and plugins (installed by setup.sh)
+plugins/
+
+# Cache files
+*.log
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Claude
+.claude/
